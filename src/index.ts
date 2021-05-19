@@ -1,5 +1,5 @@
-console.log('Service Conductor initializing...');
+console.log('Service Conductor initializing...')
 
-export function run(id: string) {
-    console.log(`=== ${id} =========`);
+export function run(id: string): void {
+	console.log(`=== ${id} =========`)
 }
