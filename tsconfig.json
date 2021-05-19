@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"allowJs": true,
+		"sourceMap": true,
+		"rootDir": "src",
+		"outDir": "./transformers",
+		"strict": true,
+		"noImplicitAny": false,
+		"strictNullChecks": false,
+		"baseUrl": "./",
+		"typeRoots": [
+			"node_modules/@types"
+		],
+		"esModuleInterop": true
+	},
+	"include": [
+		"src/**/*"
+	]
+}
