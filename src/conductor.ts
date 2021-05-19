@@ -15,7 +15,7 @@ function setBody(factory: ts.NodeFactory, node: ts.MethodDeclaration, body: ts.B
 	)
 }
 
-export function conductorTransformer(context: ts.TransformationContext): ts.Transformer<ts.SourceFile> {
+export function transformer(context: ts.TransformationContext): ts.Transformer<ts.SourceFile> {
 	const f = context.factory
 	function transform(sourceFile: ts.SourceFile): ts.SourceFile {
 		let firstTime = true
