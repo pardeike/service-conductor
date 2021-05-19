@@ -30,7 +30,7 @@ export function transformer(context: ts.TransformationContext): ts.Transformer<t
 						undefined,
 						f.createNamedImports([
 							f.createImportSpecifier(
-								f.createIdentifier('__conductor'),
+								undefined,
 								f.createIdentifier('__conductor'),
 							),
 						]),
@@ -49,7 +49,10 @@ export function transformer(context: ts.TransformationContext): ts.Transformer<t
 						[].concat(
 							f.createCallExpression(
 								f.createPropertyAccessExpression(
-									f.createIdentifier('service_conductor_1'),
+									f.createPropertyAccessExpression(
+										f.createIdentifier('service_conductor_1'),
+										f.createIdentifier('default'),
+									),
 									f.createIdentifier('run'),
 								),
 								undefined,

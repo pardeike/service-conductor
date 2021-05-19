@@ -1,6 +1,6 @@
 {
 	"name": "service-conductor",
-	"version": "1.0.0-alpha8",
+	"version": "1.0.0-alpha9",
 	"description": "Controlling micro services for testing purposes",
 	"main": "lib/index.js",
 	"types": "lib/index.d.js",
