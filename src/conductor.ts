@@ -46,8 +46,9 @@ function update(f: ts.NodeFactory, sourceFile: ts.SourceFile, node: ts.MethodDec
 				),
 				node.body.statements,
 			),
-			false,
+			true,
 		),
+		true
 	)
 }
 
