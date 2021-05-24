@@ -1,4 +1,9 @@
 import ts from 'typescript'
+import conduct from './conductor'
+
+export function run(id: string): void {
+	conduct.methodCallback(id)
+}
 
 function setMethodBody(factory: ts.NodeFactory, node: ts.MethodDeclaration, body: ts.Block): ts.MethodDeclaration {
 	return factory.updateMethodDeclaration(

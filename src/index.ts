@@ -1,12 +1,9 @@
-import { transformer } from './conductor'
+import conductor from './conductor'
+import { run, transformer } from './transformer'
 
-console.log('Service Conductor initializing...')
-
-function run(id: string): void {
-	console.log(`=== ${id} =========`)
-}
+conductor.main()
 
 export default {
-	run: run,
-	transformer: transformer
+	run,
+	transformer
 }
