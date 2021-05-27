@@ -75,7 +75,7 @@ export function sendMethodToConductor(id: string): void {
 	console.log(`ENTER METHOD ${id}`)
 	worker.postMessage({ method: id })
 	console.log(`MESSAGE POSTED`)
-	//Atomics.wait(semaphore, 0, 0)
-	//Atomics.store(semaphore, 0, 0)
+	Atomics.wait(semaphore, 0, 0)
+	Atomics.store(semaphore, 0, 0)
 	console.log(`EXIT METHOD ${id}`)
 }

@@ -4,45 +4,75 @@ import { Scenario } from './types'
 
 export class ConnectedClient {
 	name: string
+	seenMethods: Set<string>
+	nextMethod: string
+	nextMethodCallback: () => void
 	outStream: WriteStream
 	errStream: WriteStream
-	process: ChildProcessWithoutNullStreams | undefined
+	client: ChildProcessWithoutNullStreams | undefined
 
 	constructor(scenario: Scenario, name: string) {
 		this.name = name
+		this.seenMethods = new Set<string>()
+		this.nextMethod = ''
 		const info = scenario.processes[name]
 		this.outStream = createWriteStream(info.stdout)
 		this.errStream = createWriteStream(info.stderr)
 	}
 
 	static spawn(scenario: Scenario, name: string): ConnectedClient {
-		const client = new ConnectedClient(scenario, name)
+		const instance = new ConnectedClient(scenario, name)
 		const info = scenario.processes[name]
 		console.log(`Launching ${name}: ${info.command} ${info.arguments.join(' ')}`)
-		const child = spawn(info.command, [...info.arguments, '--conductor', name, '127.0.0.1'], {
+		const client = spawn(info.command, [...info.arguments, '--conductor', name, '127.0.0.1'], {
 			cwd: scenario.root
 		})
-		child.stdout.pipe(client.outStream)
-		child.stderr.pipe(client.errStream)
-		child.on('close', code => {
+		client.stdout.pipe(instance.outStream)
+		client.stderr.pipe(instance.errStream)
+		client.on('close', code => {
 			console.log(`${name} exited with code ${code}`)
 		})
-		child.on('error', err => {
+		client.on('error', err => {
 			console.log(`${name} returned error ${err}`)
 		})
-		client.process = child
-		return client
+		instance.client = client
+		return instance
+	}
+
+	mark(method: string): void {
+		console.log(`---> ${this.name}: ${method}`)
+		if (method == this.nextMethod) {
+			this.seenMethods.delete(method)
+			this.nextMethod = ''
+			this.nextMethodCallback()
+			this.nextMethodCallback = undefined
+			return
+		}
+		this.seenMethods.add(method)
+	}
+
+	wait(method: string, callback: () => void): void {
+		console.log(`...${this.name}: ${method}`)
+		if (this.seenMethods.has(method)) {
+			this.seenMethods.delete(method)
+			this.nextMethod = ''
+			this.nextMethodCallback = undefined
+			callback()
+			return
+		}
+		this.nextMethod = method
+		this.nextMethodCallback = callback
 	}
 
 	exitCode(): number | null {
-		return this.process.exitCode
+		return this.client.exitCode
 	}
 
 	kill(): void {
 		this.outStream.close()
 		this.errStream.close()
 		console.log(`Killing ${this.name}`)
-		process.kill(9)
-		process = undefined
+		this.client.kill(9)
+		this.client = undefined
 	}
 }

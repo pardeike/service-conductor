@@ -36,13 +36,15 @@ scenario:
             stderr: /tmp/client2.err.txt
     execution:
         - server_: start
-        - server_: exec serve
+        - server_: exec ready
         - client1: start
-        - client1: exec greet
         - client2: start
+        - client1: exec greet
         - client2: exec greet
         - server_: exec greet
         - server_: exec greet
-#       - client1: stop
-#       - client2: stop
-#       - server_: stop
+        - client1: exec greetResponse
+        # - client1: stop
+        - client2: exec greetResponse
+        # - client2: stop
+        - server_: stop

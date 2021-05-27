@@ -15,19 +15,46 @@ const options = yargs.options({
 }).argv
 
 let scenario: Scenario
+let idx = 0
 const childProcesses: { [processName: string]: ConnectedClient } = {}
 
 function methodCallback(id: string): void {
 	sendMethodToConductor(id)
 }
 
-function start(name: string): void {
-	childProcesses[name] = ConnectedClient.spawn(scenario, name)
+function mark(processName: string, method: string): void {
+	childProcesses[processName].mark(method)
 }
 
-function stop(name: string): void {
-	if (childProcesses[name].exitCode() == null) {
-		childProcesses[name].kill()
+function nextStep(): void {
+	const step = scenario.execution.shift()
+	if (step == undefined) {
+		console.log('')
+		console.log(`DONE`)
+		return
+	}
+
+	console.log('')
+	console.log(`STEP ${++idx}`)
+
+	const [processName, str] = Object.entries(step)[0]
+	const command = str.trim()
+
+	if (command == 'start') {
+		childProcesses[processName] = ConnectedClient.spawn(scenario, processName)
+		setImmediate(nextStep)
+		return
+	}
+
+	if (command == 'stop') {
+		childProcesses[processName].kill()
+		setImmediate(nextStep)
+		return
+	}
+
+	if (command.startsWith('exec ')) {
+		childProcesses[processName].wait(command.substr(5), () => setImmediate(nextStep))
+		return
 	}
 }
 
@@ -35,17 +62,10 @@ function perform(path: string): void {
 	const content = fs.readFileSync(path, 'utf8')
 	const scenarioFile = yaml.parse(content) as ScenarioFile
 	scenario = scenarioFile.scenario
-	startServer()
-	console.log(`Starting scenario ${scenario.name} in ${scenario.root}`)
-	scenario.execution.forEach(step => {
-		const [processName, str] = Object.entries(step)[0]
-		const command = str.trim()
-		if (command == 'start') start(processName)
-		else if (command == 'stop') stop(processName)
-		else if (command.startsWith('exec ')) {
-			const method = command.substr(5)
-			console.log(`Executing '${method}' in ${processName}`)
-		}
+	idx = 0
+	startServer(mark, () => {
+		console.log(`Starting scenario ${scenario.name} in ${scenario.root}`)
+		setImmediate(nextStep)
 	})
 }
 

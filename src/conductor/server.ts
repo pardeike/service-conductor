@@ -1,14 +1,17 @@
 import net from 'net'
 import split2 from 'split2'
 
-export function startServer(): void {
+export function startServer(
+	markCallback: (processName: string, method: string) => void,
+	readyCallback: () => void
+): void {
 	const server = net.createServer()
 	server.maxConnections = 32
 	server.listen(1337)
-	console.log('Conductor server started')
 
 	server.on('listening', () => {
 		console.log('Conductor server is listening')
+		readyCallback()
 	})
 
 	server.on('close', () => {
@@ -22,20 +25,20 @@ export function startServer(): void {
 	server.on('connection', socket => {
 		let clientName = ''
 		socket.setTimeout(800000)
+		const lines = socket.pipe(split2())
 
-		socket.pipe(split2()).on('data', line => {
+		lines.on('data', line => {
 			const parts = line.split(' ', 2)
 			switch (parts[0]) {
 				case 'HELLO':
 					clientName = parts[1]
-					console.log(`#${clientName} connected`)
+					// console.log(`#${clientName} connected`)
 					break
 				case 'METHOD':
-					console.log(`#${clientName} => ${parts[1]}`)
-					setTimeout(() => {
-						console.log(`#${clientName} allowed to continue`)
-						socket.write('CONTINUE\n')
-					}, 2000)
+					const method = parts[1]
+					// console.log(`#${clientName} => ${method}`)
+					markCallback(clientName, method)
+					socket.write('CONTINUE\n')
 					break
 			}
 		})
@@ -45,7 +48,7 @@ export function startServer(): void {
 		})
 
 		socket.on('end', () => {
-			console.log(`#${clientName} ended connection`)
+			// console.log(`#${clientName} ended connection`)
 		})
 
 		socket.on('timeout', () => {
@@ -55,6 +58,10 @@ export function startServer(): void {
 
 		socket.on('error', err => {
 			console.log(`#${clientName} connection error: ${err}`)
+		})
+
+		lines.on('error', () => {
+			// console.log(`#${clientName} connection error: ${err}`)
 		})
 	})
 }
