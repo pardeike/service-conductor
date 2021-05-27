@@ -1,22 +1,26 @@
 export interface ScenarioFile {
-  scenario: Scenario;
+	scenario: Scenario;
 }
 
 export interface Scenario {
-  name: string;
-  root: string;
-  processes: Processes;
-  execution: Step[];
+	name: string;
+	root: string;
+	log: string;
+	processes: Processes;
+	execution: Step[];
 }
 
 export interface Processes {
-  [processName: string]: Command;
+	[processName: string]: Command;
 }
 
 export interface Command {
-  command: string;
+	command: string;
+	arguments: string[];
+	stdout: string;
+	stderr: string;
 }
 
 export interface Step {
-  [processName: string]: string;
+	[processName: string]: string;
 }

@@ -16,11 +16,15 @@ function setMethodBody(factory: ts.NodeFactory, node: ts.MethodDeclaration, body
 		node.typeParameters,
 		node.parameters,
 		node.type,
-		body,
+		body
 	)
 }
 
-function setFunctionBody(factory: ts.NodeFactory, node: ts.FunctionDeclaration, body: ts.Block): ts.FunctionDeclaration {
+function setFunctionBody(
+	factory: ts.NodeFactory,
+	node: ts.FunctionDeclaration,
+	body: ts.Block
+): ts.FunctionDeclaration {
 	return factory.updateFunctionDeclaration(
 		node,
 		node.decorators,
@@ -30,11 +34,28 @@ function setFunctionBody(factory: ts.NodeFactory, node: ts.FunctionDeclaration, 
 		node.typeParameters,
 		node.parameters,
 		node.type,
-		body,
+		body
 	)
 }
 
-function update(f: ts.NodeFactory, sourceFile: ts.SourceFile, node: ts.MethodDeclaration | ts.FunctionDeclaration): ts.Block {
+function createImportDeclaration(f: ts.NodeFactory): ts.ImportDeclaration {
+	return f.createImportDeclaration(
+		undefined,
+		undefined,
+		f.createImportClause(
+			false,
+			undefined,
+			f.createNamedImports([f.createImportSpecifier(undefined, f.createIdentifier('__conductor'))])
+		),
+		f.createStringLiteral('service-conductor')
+	)
+}
+
+function update(
+	f: ts.NodeFactory,
+	sourceFile: ts.SourceFile,
+	node: ts.MethodDeclaration | ts.FunctionDeclaration
+): ts.Block {
 	return f.createBlock(
 		f.createNodeArray(
 			[].concat(
@@ -42,50 +63,25 @@ function update(f: ts.NodeFactory, sourceFile: ts.SourceFile, node: ts.MethodDec
 					f.createPropertyAccessExpression(
 						f.createPropertyAccessExpression(
 							f.createIdentifier('service_conductor_1'),
-							f.createIdentifier('default'),
+							f.createIdentifier('default')
 						),
-						f.createIdentifier('run'),
+						f.createIdentifier('run')
 					),
 					undefined,
-					[f.createStringLiteral(`${node.name.getText(sourceFile)}`)],
+					[f.createStringLiteral(`${node.name.getText(sourceFile)}`)]
 				),
-				node.body.statements,
+				node.body.statements
 			),
-			true,
+			true
 		),
 		true
 	)
 }
 
-export function transformer(context: ts.TransformationContext): ts.Transformer<ts.SourceFile> {
+export const transformer: ts.TransformerFactory<ts.SourceFile> = context => {
 	const f = context.factory
 	function transform(sourceFile: ts.SourceFile): ts.SourceFile {
-
-		let firstTime = true
-		const visitImport = (node: ts.Node): ts.VisitResult<ts.Node> => {
-			if (ts.isSourceFile(node) == false && firstTime) {
-				firstTime = false
-				const declaration = f.createImportDeclaration(
-					[],
-					[],
-					f.createImportClause(
-						false,
-						undefined,
-						f.createNamedImports([
-							f.createImportSpecifier(
-								undefined,
-								f.createIdentifier('__conductor'),
-							),
-						]),
-					),
-					f.createStringLiteral('service-conductor'),
-				)
-				return [declaration, node]
-			}
-			return ts.visitEachChild(node, (child) => visitImport(child), context)
-		}
-
-		const visitCall = (node: ts.Node): ts.VisitResult<ts.Node> => {
+		const visitor = (node: ts.Node): ts.VisitResult<ts.Node> => {
 			if (ts.isMethodDeclaration(node)) {
 				const body = update(f, sourceFile, node)
 				return setMethodBody(f, node, body)
@@ -94,10 +90,10 @@ export function transformer(context: ts.TransformationContext): ts.Transformer<t
 				const body = update(f, sourceFile, node)
 				return setFunctionBody(f, node, body)
 			}
-			return ts.visitEachChild(node, (child) => visitCall(child), context)
+			return ts.visitEachChild(node, visitor, context)
 		}
-
-		return ts.visitNode(ts.visitNode(sourceFile, visitImport), visitCall)
+		sourceFile = f.updateSourceFile(sourceFile, [createImportDeclaration(f), ...sourceFile.statements])
+		return ts.visitNode(sourceFile, visitor)
 	}
 	return transform
 }

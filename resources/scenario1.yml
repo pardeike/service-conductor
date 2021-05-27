@@ -1,22 +1,48 @@
 scenario:
-  name: Test Scenario 1
-  root: /Users/u0035718/Projects/greet-grpc
-  processes:
-    server_:
-      command: npm run start -- serve
-    client1:
-      command: npm run start -- greet --user CLIENT1
-    client2:
-      command: npm run start -- greet --user CLIENT2
-  execution:
-    - server_: start
-    - server_: exec serve
-    - client1: start
-    - client1: exec greet
-    - client2: start
-    - client2: exec greet
-    - server_: exec greet
-    - server_: exec greet
-    - client1: stop
-    - client2: stop
-    - server_: stop
+    name: Test Scenario 1
+    root: /Users/u0035718/Projects/greet-grpc
+    log: /tmp/scenario1.log.txt
+    processes:
+        server_:
+            command: npm
+            arguments:
+                - run
+                - start
+                - --
+                - serve
+            stdout: /tmp/server.out.txt
+            stderr: /tmp/server.err.txt
+        client1:
+            command: npm
+            arguments:
+                - run
+                - start
+                - --
+                - greet
+                - --user
+                - CLIENT1
+            stdout: /tmp/client1.out.txt
+            stderr: /tmp/client1.err.txt
+        client2:
+            command: npm
+            arguments:
+                - run
+                - start
+                - --
+                - greet
+                - --user
+                - CLIENT2
+            stdout: /tmp/client2.out.txt
+            stderr: /tmp/client2.err.txt
+    execution:
+        - server_: start
+        - server_: exec serve
+        - client1: start
+        - client1: exec greet
+        - client2: start
+        - client2: exec greet
+        - server_: exec greet
+        - server_: exec greet
+#       - client1: stop
+#       - client2: stop
+#       - server_: stop
