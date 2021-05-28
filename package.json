@@ -1,6 +1,6 @@
 {
 	"name": "service-conductor",
-	"version": "1.0.0-alpha11",
+	"version": "1.0.0-alpha12",
 	"description": "Controlling micro services for testing purposes",
 	"main": "lib/index.js",
 	"types": "lib/index.d.js",
@@ -27,7 +27,7 @@
 	"scripts": {
 		"lint": "npx eslint --fix --ext .ts src",
 		"prebuild": "npm run lint",
-		"clean": "rm -rf transformers",
+		"clean": "rm -rf lib node_modules package-lock.json",
 		"build": "npx tsc",
 		"test": "node lib/index.js -f resources/scenario1.yml",
 		"format": "prettier --write \"src/**/*.ts\" \"lib/**/*.js\"",
